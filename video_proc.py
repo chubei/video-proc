@@ -11,6 +11,13 @@ def run(args: list):
   output = subprocess.check_output(str_args)
   print(output.decode('utf-8'))
 
+def check_executable(name: str):
+  try:
+    subprocess.run([name, '-version'])
+  except FileNotFoundError:
+    print(f'{name} not found. Please install {name}.')
+    exit(1)
+
 def get_video_duration(input_file: Path) -> float:
   output = subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'json', input_file])
   data = json.loads(output)
@@ -78,12 +85,9 @@ def process_video(input_file: Path, background_image_path: Path, output_file: Pa
   temp_file2.rename(output_file)
 
 def main(input_folder: Path, background_image_path: Path, output_folder: Path, force: bool, verbose: bool):
-  # Check ffmpeg
-  try:
-    run(['ffmpeg', '-version'])
-  except FileNotFoundError:
-    print('ffmpeg not found. Please install ffmpeg.')
-    exit(1)
+  # Check ffmpeg and ffprobe
+  check_executable('ffmpeg')
+  check_executable('ffprobe')
   # Create output folder
   output_folder.mkdir(exist_ok=True, parents=True)
   # Traverse the input folder
